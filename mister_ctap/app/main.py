@@ -17,6 +17,7 @@ from mister_ctap.core.authenticators import (
     get_authenticators,
     parse_authenticator_options,
     only_supported_authenticator_options,
+    wink,
 )
 from mister_ctap.app.view_models import (
     AuthenticatorListData,
@@ -78,6 +79,9 @@ class MisterCtapApp(App):
         model = node_data.authenticator
         supported_options = only_supported_authenticator_options(model.options)
         options = JSON.from_data(supported_options).text
+
+        # Try and visually notify the user which authenticator they're looking at
+        wink(model.raw)
 
         await self.body.update(f"Supported options for {model.aaguid}:\n{options}")
 

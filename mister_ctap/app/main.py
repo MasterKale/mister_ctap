@@ -1,5 +1,6 @@
 import uuid
 import json
+from typing import List
 
 from rich.json import JSON
 from textual.app import App
@@ -84,7 +85,12 @@ class MisterCtapApp(App):
         # Try and visually notify the user which authenticator they're looking at
         wink(model.raw)
 
-        await self.body.update(f"Supported options for {model.aaguid}:\n{options}")
+        body_content: List[str] = [
+            f"Supported options for {model.aaguid}:",
+            str(options),
+        ]
+
+        await self.body.update("\n".join(body_content))
 
 
 MisterCtapApp.run(title="Mister CTAP", log="textual.log")

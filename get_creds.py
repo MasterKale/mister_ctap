@@ -11,7 +11,7 @@ from getpass import getpass
 from fido2.ctap2 import CredentialManagement, Ctap2, ClientPin
 from getpass import getpass
 
-from mister_ctap.structs import (
+from mister_ctap.core.structs import (
     PublicKeyCredentialDescriptor,
     PublicKeyCredentialUserEntity,
     AuthenticatorOptions,

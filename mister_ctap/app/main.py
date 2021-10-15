@@ -74,9 +74,10 @@ class MisterCtapApp(App):
         await self.call_later(display_authenticators)
 
     async def handle_tree_click(self, message: TreeClick[dict]) -> None:
-        id = message.node.label
         node_data = AuthenticatorListData.parse_obj(message.node.data)
         model = node_data.authenticator
+
+        # Filter out unsupported options
         supported_options = only_supported_authenticator_options(model.options)
         options = JSON.from_data(supported_options).text
 

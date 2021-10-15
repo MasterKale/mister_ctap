@@ -15,6 +15,9 @@ def parse_authenticator_options(authenticator: Ctap2) -> AuthenticatorOptions:
 
 
 def only_supported_authenticator_options(options: AuthenticatorOptions) -> dict:
+    """
+    A helper to only show supported options
+    """
     return {key: val for key, val in options.dict().items() if val is True}
 
 

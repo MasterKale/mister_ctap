@@ -29,14 +29,6 @@ class AuthenticatorsList(TreeControl):
         await self.root.expand()
         await self.display_authenticators()
 
-    async def on_reload_authenticators(
-        self, new_authenticators: List[AuthenticatorViewModel]
-    ) -> None:
-        # TODO: Figure out how to clear items first before displaying the new list
-        self.authenticators = new_authenticators
-        await self.display_authenticators()
-        self.refresh(layout=True)
-
     async def handle_tree_click(self, message: TreeClick[dict]) -> None:
         node_data = AuthenticatorListData.parse_obj(message.node.data)
         auth_view_model = node_data.authenticator

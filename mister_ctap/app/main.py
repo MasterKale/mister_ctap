@@ -3,6 +3,7 @@ import json
 from typing import List
 
 from rich.json import JSON
+from rich.markdown import Markdown
 from textual.app import App
 from textual import events, log
 from textual.widgets import (
@@ -24,10 +25,23 @@ from mister_ctap.app.view_models import (
     AuthenticatorListData,
     AuthenticatorViewModel,
 )
+from mister_ctap.app.widgets import AuthenticatorsList
 
 
 class MisterCtapApp(App):
     body: ScrollView
+    authenticators_list: AuthenticatorsList
+    auth_view_models: List[AuthenticatorViewModel] = []
+
+    def _get_authenticators(self) -> List[AuthenticatorViewModel]:
+        return [
+            AuthenticatorViewModel(
+                raw=authr,
+                aaguid=str(uuid.UUID(bytes=authr.info.aaguid)),
+                options=parse_authenticator_options(authr),
+            )
+            for authr in get_authenticators()
+        ]
 
     async def on_load(self, event: events.Load) -> None:
         """
@@ -35,62 +49,54 @@ class MisterCtapApp(App):
         """
         await self.bind("q", "quit", "Quit")
         await self.bind("b", "view.toggle('sidebar')", "Toggle sidebar")
+        await self.bind("r", "reload_authenticators", "Reload")
 
     async def on_mount(self, event: events.Mount) -> None:
         """
         Two-column layout with list on left and tabs on right
         """
 
-        self.body = ScrollView(gutter=1, contents="Credentials Go Here")
-        tree = TreeControl(
-            "Authenticators",
-            {},
-            padding=(1, 2),
-        )
+        authenticators = self._get_authenticators()
 
-        # Display the data
-        await tree.root.expand()
+        self.body = ScrollView(gutter=1, contents="Credentials Go Here")
+        self.authenticators_list = AuthenticatorsList(
+            authenticators, self.handle_select_authenticator
+        )
 
         # Add Header / Footer / Sidebar
         await self.view.dock(Header(), edge="top")
         await self.view.dock(Footer(), edge="bottom")
-        await self.view.dock(ScrollView(tree), edge="left", size=45, name="sidebar")
+        await self.view.dock(
+            ScrollView(self.authenticators_list), edge="left", size=45, name="sidebar"
+        )
 
         # Add Body to remaining space
         await self.view.dock(self.body, edge="right")
 
-        async def display_authenticators() -> None:
-            # await sidebar.update("Authenticators go here")
-            # Add data to tree view
-            for authr in get_authenticators():
-                model = AuthenticatorViewModel(
-                    raw=authr,
-                    aaguid=str(uuid.UUID(bytes=authr.info.aaguid)),
-                    options=parse_authenticator_options(authr),
-                )
-
-                tree_data = AuthenticatorListData(authenticator=model)
-                await tree.add(tree.root.id, model.aaguid, tree_data.dict())
-
-        await self.call_later(display_authenticators)
-
-    async def handle_tree_click(self, message: TreeClick[dict]) -> None:
-        node_data = AuthenticatorListData.parse_obj(message.node.data)
-        model = node_data.authenticator
-
+    async def handle_select_authenticator(
+        self, authenticator: AuthenticatorViewModel
+    ) -> None:
         # Filter out unsupported options
-        supported_options = only_supported_authenticator_options(model.options)
-        options = JSON.from_data(supported_options).text
+        supported_options = only_supported_authenticator_options(authenticator.options)
+        # options = str(JSON.from_data(supported_options).text)
+        supported_options_simple = list(supported_options.keys())
+        supported_options_simple.sort()
+        options = ", ".join(supported_options_simple)
 
         # Try and visually notify the user which authenticator they're looking at
-        wink(model.raw)
+        wink(authenticator.raw)
 
         body_content: List[str] = [
-            f"Supported options for {model.aaguid}:",
-            str(options),
+            f"# AAGUID: {authenticator.aaguid}",
+            "**Supported options:**",
+            f"> {options}",
         ]
 
-        await self.body.update("\n".join(body_content))
+        await self.body.update(Markdown("\n".join(body_content)))
+
+    async def action_reload_authenticators(self):
+        authenticators = self._get_authenticators()
+        await self.authenticators_list.on_reload_authenticators(authenticators)
 
 
 MisterCtapApp.run(title="Mister CTAP", log="textual.log")

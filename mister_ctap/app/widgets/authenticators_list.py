@@ -30,6 +30,9 @@ class AuthenticatorsList(TreeControl):
         await self.display_authenticators()
 
     async def handle_tree_click(self, message: TreeClick[dict]) -> None:
+        # Don't crash if a tree node doesn't have authenticator data
+        if not message.node.data:
+            return
         node_data = AuthenticatorListData.parse_obj(message.node.data)
         auth_view_model = node_data.authenticator
 

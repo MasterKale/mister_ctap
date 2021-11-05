@@ -8,7 +8,10 @@ from textual.widgets import Header
 
 
 class MisterCtapHeader(Header):
-    """Override the default Header for Styling"""
+    """Override the default Header for Styling
+
+    Borrowed from https://github.com/sirfuzzalot/textual-inputs/blob/main/examples/simple_form.py
+    """
 
     def __init__(self) -> None:
         super().__init__()

@@ -14,7 +14,6 @@ from textual.widgets import (
     TreeControl,
     TreeClick,
 )
-
 from mister_ctap.core.authenticators import (
     get_authenticators,
     parse_authenticator_options,
@@ -25,7 +24,7 @@ from mister_ctap.app.view_models import (
     AuthenticatorListData,
     AuthenticatorViewModel,
 )
-from mister_ctap.app.widgets import AuthenticatorsList
+from mister_ctap.app.widgets import AuthenticatorsList, MisterCtapHeader
 
 
 class MisterCtapApp(App):
@@ -62,7 +61,7 @@ class MisterCtapApp(App):
         self.authenticators_list_container = ScrollView()
 
         # Add Header / Footer / Sidebar
-        await self.view.dock(Header(), edge="top")
+        await self.view.dock(MisterCtapHeader(), edge="top")
         await self.view.dock(Footer(), edge="bottom")
         await self.view.dock(
             self.authenticators_list_container, edge="left", size=45, name="sidebar"

@@ -4,16 +4,15 @@ from typing import List
 
 from rich.json import JSON
 from rich.markdown import Markdown
+from rich.style import Style
 from textual.app import App
 from textual import events, log
 from textual.widgets import (
-    Header,
     Footer,
     ScrollView,
-    Button,
-    TreeControl,
-    TreeClick,
 )
+from textual_inputs import IntegerInput, TextInput, text_input
+
 from mister_ctap.core.authenticators import (
     get_authenticators,
     parse_authenticator_options,
@@ -29,6 +28,7 @@ from mister_ctap.app.widgets import AuthenticatorsList, MisterCtapHeader
 
 class MisterCtapApp(App):
     body: ScrollView
+
     authenticators_list_container: ScrollView
     auth_view_models: List[AuthenticatorViewModel] = []
 
@@ -68,8 +68,17 @@ class MisterCtapApp(App):
         )
 
         # Add Body to remaining space
-        self.body = ScrollView(gutter=1)
-        await self.view.dock(self.body, edge="right")
+        self.text_input = TextInput(
+            name="some_text",
+            placeholder="enter some text",
+            title="Some Text",
+            password=True,
+        )
+        self.text_input.border_style = Style(color="dark_green")
+        self.body = ScrollView(self.text_input, gutter=1)
+
+        # await self.view.dock(self.body, edge="right")
+        await self.view.dock(self.body, self.text_input, edge="top")
 
         # Display authenticators
         await self.action_reload_authenticators()

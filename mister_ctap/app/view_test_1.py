@@ -1,5 +1,6 @@
 from rich.console import Group
 from rich.panel import Panel
+from rich.style import Style
 
 from textual.app import App
 from textual import events
@@ -32,12 +33,19 @@ class ViewTest1(App):
         panel1 = Panel("Hello", style="black on red", height=8)
         panel2 = Panel("World", style="black on blue", height=4)
         panel3 = Panel("!", style="black on green", height=8)
+        btn1 = Button(
+            label="Button Label",
+            name="btn1",
+            style=Style(color="white", bgcolor="yellow"),
+        )
 
         # Group everything together
-        group = Group(panel1, panel2, panel3)
+        group = Group(panel1, panel2, panel3, btn1)
 
         # Set contents of the scrollview
         await self.container.update(group)
+
+        # panel1.renderable = "Boo"
 
 
 ViewTest1.run(title="View Test 1", log="textual_view_test_1.log")
